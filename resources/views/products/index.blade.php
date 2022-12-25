@@ -8,14 +8,21 @@
 
 
     <div class="card">
-        <form action="" method="get" class="card-header">
+        <form action="http://127.0.0.1:8000/product" method="get" class="card-header">
             <div class="form-row justify-content-between">
                 <div class="col-md-2">
-                    <input type="text" name="title" placeholder="Product Title" class="form-control">
+                    <input type="text" name="title" placeholder="Product Title" class="form-control title">
                 </div>
                 <div class="col-md-2">
                     <select name="variant" id="" class="form-control">
-
+                       @foreach($productVariants as $variants)
+                            <option selected disabled>Select an Option</option>
+                            <optgroup label="{{ $variants->title }}">
+                            @foreach($variants->productVariants as $variantList)
+                                <option value="{{ $variantList->variant }}">{{ $variantList->variant }}</option>
+                            @endforeach
+                           </optgroup>
+                       @endforeach
                     </select>
                 </div>
 
@@ -36,10 +43,10 @@
                 </div>
             </div>
         </form>
-
+        
         <div class="card-body">
             <div class="table-response">
-                <table class="table">
+                <table class="table" id="product_table">
                     <thead>
                     <tr>
                         <th>#</th>
@@ -51,50 +58,107 @@
                     </thead>
 
                     <tbody>
-
+                    @foreach($productList as $key => $products)
                     <tr>
-                        <td>1</td>
-                        <td>T-Shirt <br> Created at : 25-Aug-2020</td>
-                        <td>Quality product in low cost</td>
+                        <td>{{ $key + 1 }}</td>
+                        <td>{{ $products->title }} <br> Created at : {{ $products->created_at }}</td>
+                        <td>{{ $products->description }}</td>
                         <td>
-                            <dl class="row mb-0" style="height: 80px; overflow: hidden" id="variant">
-
+                            <dl class="row mb-0 variant" style="height:100px;overflow:hidden" id="">
+                            @foreach($products->productPrice as $prices)
                                 <dt class="col-sm-3 pb-0">
-                                    SM/ Red/ V-Nick
+                                @if($prices->productVariantOne != NULL)    
+                                {{ $prices->productVariantOne->variant }}
+                                @endif
+
+                                @if($prices->productVariantTwo != NULL)    
+                                / {{ $prices->productVariantTwo->variant }} 
+                                @endif
+
+                                @if($prices->productVariantThree != NULL)    
+                                / {{ $prices->productVariantThree->variant }}
+                                @endif
                                 </dt>
                                 <dd class="col-sm-9">
                                     <dl class="row mb-0">
-                                        <dt class="col-sm-4 pb-0">Price : {{ number_format(200,2) }}</dt>
-                                        <dd class="col-sm-8 pb-0">InStock : {{ number_format(50,2) }}</dd>
+                                        <dt class="col-sm-4 pb-0">Price : {{ number_format($prices->price, 2) }}</dt>
+                                        <dd class="col-sm-8 pb-0">InStock : {{ number_format($prices->stock,2) }}</dd>
                                     </dl>
                                 </dd>
+                            @endforeach
                             </dl>
-                            <button onclick="$('#variant').toggleClass('h-auto')" class="btn btn-sm btn-link">Show more</button>
+                            <button id="" class="btn btn-sm btn-link getFull">Show more</button>
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('product.edit', 1) }}" class="btn btn-success">Edit</a>
+                                <a href="{{ route('product.edit', $products->id) }}" class="btn btn-success">Edit</a>
                             </div>
                         </td>
                     </tr>
+                    @endforeach
 
                     </tbody>
 
                 </table>
             </div>
-
         </div>
 
         <div class="card-footer">
             <div class="row justify-content-between">
                 <div class="col-md-6">
-                    <p>Showing 1 to 10 out of 100</p>
+                    <p>Showing {{($productList->currentpage()-1)*$productList->perpage()+1}} to {{$productList->currentpage()*$productList->perpage()}}
+                    of  {{$productList->total()}} entries
+                    </p>
                 </div>
                 <div class="col-md-2">
-
+                  {!! $productList->links() !!}
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            $(".getFull").click(function() {
+                $(this).siblings('.variant').toggleClass('h-auto');
+            })
+            // $('#product_table').DataTable({
+            //     ajax: 'http://127.0.0.1:8000/product-list',
+            //     columns: [
+            //         { data: 'title' },
+            //         { data: 'description' },
+            //         { data: 'variant' },
+            //         { data: 'productPrice[]' },
+            //         { data: 'hr.2' },
+            //         { data: 'hr.1' },
+            //     ],
+            // });
+            
+            $(document).on('keyup', '.title', function(){
+                event.preventDefault();
+                $('#productList').append('<img style="position: fixed; left: 45%; top: 20%; z-index: 100000;" src="images/load.gif" />');
+                var query = $(this).val();
+                getProducts(query);
+            });
+            //-----------------------Get All Task Info ------------------------
+            function getProducts(query = '')
+            {
+                $.ajax({
+                url:"/product-list",
+                method:'GET',
+                data:{title:query},
+                dataType:'json',
+                success:function(data)
+                {
+                    console.log(data);
+                    $('#productList').html(data);
+                    $('#total_records').text(data.totalRow);
+                }
+                })
+            }
+            getProducts();
+            
+        })
+    </script>
 
 @endsection
