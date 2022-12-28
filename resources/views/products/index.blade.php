@@ -122,17 +122,6 @@
             $(".getFull").click(function() {
                 $(this).siblings('.variant').toggleClass('h-auto');
             })
-            // $('#product_table').DataTable({
-            //     ajax: 'http://127.0.0.1:8000/product-list',
-            //     columns: [
-            //         { data: 'title' },
-            //         { data: 'description' },
-            //         { data: 'variant' },
-            //         { data: 'productPrice[]' },
-            //         { data: 'hr.2' },
-            //         { data: 'hr.1' },
-            //     ],
-            // });
             
             $(document).on('keyup', '.title', function(){
                 event.preventDefault();

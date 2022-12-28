@@ -56,32 +56,19 @@ class ProductController extends Controller
 
         $productList      = $getList->paginate(10);
         $productVariants  = Variant::with('productVariants')->get();
-        // echo "<pre>";print_r(json_encode($productList));die();
         
-        return view('products.index', compact('productList', 'productVariants'));
+        return view("products.index", compact('productList', 'productVariants'));
     }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Http\Response|\Illuminate\View\View
-     */
+    
     public function create()
     {
         $variants = Variant::all();
         return view('products.create', compact('variants'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    
     public function store(Request $request)
     {
-        // dd($request->all());
-
+        dd($request->all());
         $validation = Validator::make($request->all(), [
             'title'            => 'required',
             'sku'              => 'required|unique:products'
@@ -119,20 +106,41 @@ class ProductController extends Controller
               }
                 
               foreach($request->product_variant as $key => $variant) {
-                  foreach($request->product_variant[$key]['tags'] as $subkey => $variants) {
-                      ProductVariant::create([
-                          'variant'       => $request->product_variant[$key]['tags'][$subkey],
-                          'variant_id'    => $request->product_variant[$key]['option'],
-                          'product_id'    => $createProduct->id
-                      ]);
-                  }    
+                    foreach($request->product_variant[$key]['tags'] as $subkey => $variants) {
+                        $getId = ProductVariant::create([
+                            'variant'       => $request->product_variant[$key]['tags'][$subkey],
+                            'variant_id'    => $request->product_variant[$key]['option'],
+                            'product_id'    => $createProduct->id
+                        ]);
+                    }  
+              }
+
+              $getVariants = ProductVariant::where('product_id', $createProduct->id)->get()->toArray();
+              
+              foreach($getVariants as $arrayOfVariants) {
+                $product_variant_count[$arrayOfVariants['id']] = $arrayOfVariants['variant'];
               }
     
-              foreach($request->product_variant_prices as $key => $variantPrice) {
+              foreach($request->product_variant_prices as $masterkey => $variantPrice) {
+                $makeArray = explode("/", $variantPrice['title']);
+
+                foreach($makeArray as $k => $ding) {
+                    if($makeArray[$k] != "") {
+                        foreach($product_variant_count as $dd => $dong) {
+                            $variant_one = ProductVariant::where('product_id', $createProduct->id)->where('variant', $makeArray[0])->first();
+                            $variant_two = ProductVariant::where('product_id', $createProduct->id)->where('variant', $makeArray[1])->first();
+                            $variant_three = ProductVariant::where('product_id', $createProduct->id)->where('variant', $makeArray[2])->first();
+                        }
+                    } 
+                }
+                
                 ProductVariantPrice::create([
-                    'price'                   => $request->product_variant_prices[$key]['price'],
-                    'stock'                   => $request->product_variant_prices[$key]['stock'],
-                    'product_id'              => $createProduct->id
+                    'price'                   => $request->product_variant_prices[$masterkey]['price'],
+                    'stock'                   => $request->product_variant_prices[$masterkey]['stock'],
+                    'product_id'              => $createProduct->id,
+                    'product_variant_one'     => $variant_one['id'],
+                    'product_variant_two'     => $variant_two['id'],
+                    'product_variant_three'   => $variant_three['id'],
                 ]);
               }
            });
@@ -140,49 +148,24 @@ class ProductController extends Controller
            return response()->json(200);
          }
     }
-
-
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Models\Product $product
-     * @return \Illuminate\Http\Response
-     */
+    
     public function show($product)
     {
 
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Models\Product $product
-     * @return \Illuminate\Http\Response
-     */
+    
     public function edit(Product $product)
     {
         $variants = Variant::all();
-        return view('products.edit', compact('variants'));
+        $product = Product::with('productPrice', 'productVariant')->where('id', $product->id)->first();
+        return view('products.edit', compact('variants', 'product'));
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Product $product
-     * @return \Illuminate\Http\Response
-     */
+    
     public function update(Request $request, Product $product)
     {
         //
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param \App\Models\Product $product
-     * @return \Illuminate\Http\Response
-     */
+    
     public function destroy(Product $product)
     {
         //

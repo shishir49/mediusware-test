@@ -16,6 +16,12 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+
+    <style>
+        .h-auto {
+            height: auto !important;
+        }
+    </style>
 </head>
 {{--<body id="page-top">--}}
 

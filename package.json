@@ -24,6 +24,7 @@
         "vue-template-compiler": "^2.6.10"
     },
     "dependencies": {
+        "16": "^0.0.2",
         "@fortawesome/fontawesome-free": "^5.14.0",
         "@ttskch/select2-bootstrap4-theme": "^1.4.0",
         "jquery.easing": "^1.4.1",
