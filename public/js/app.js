@@ -2113,7 +2113,6 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (error) {
         console.log(error);
       });
-      console.log(product);
     }
   },
   mounted: function mounted() {
@@ -2237,6 +2236,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -2253,6 +2262,10 @@ __webpack_require__.r(__webpack_exports__);
     product: {
       type: Array,
       required: true
+    },
+    prodvar: {
+      type: Array,
+      required: true
     }
   },
   data: function data() {
@@ -2262,7 +2275,7 @@ __webpack_require__.r(__webpack_exports__);
       description: '',
       images: [],
       product_variant: [{
-        option: this.variants[0].id,
+        title: this.variants[0].id,
         tags: []
       }],
       product_variant_prices: [],
@@ -2283,7 +2296,7 @@ __webpack_require__.r(__webpack_exports__);
         return el.id;
       });
       var selected_variants = this.product_variant.map(function (el) {
-        return el.option;
+        return el.title;
       });
       var available_variants = all_variants.filter(function (entry1) {
         return !selected_variants.some(function (entry2) {
@@ -2292,7 +2305,7 @@ __webpack_require__.r(__webpack_exports__);
       }); // console.log(available_variants)
 
       this.product_variant.push({
-        option: available_variants[0],
+        title: available_variants[0],
         tags: []
       });
     },
@@ -2332,14 +2345,14 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       var product = {
-        title: this.product_name,
-        sku: this.product_sku,
+        title: this.title,
+        sku: this.sku,
         description: this.description,
         product_image: this.images,
         product_variant: this.product_variant,
-        product_variant_prices: this.product_variant_prices
+        variant_price: this.variant_price
       };
-      axios.post('/product', product).then(function (response) {
+      axios.put('http://127.0.0.1:8000/product/update', product).then(function (response) {
         console.log(response);
 
         if (response.data == 200) {
@@ -51206,11 +51219,11 @@ var render = function() {
           _c(
             "div",
             { staticClass: "card-body" },
-            _vm._l(_vm.product.product_variant, function(item, index) {
+            _vm._l(_vm.prodvar, function(item, index) {
               return _c("div", { staticClass: "row" }, [
                 _c("div", { staticClass: "col-md-4" }, [
                   _c("div", { staticClass: "form-group" }, [
-                    _c("label", { attrs: { for: "" } }, [_vm._v("Option")]),
+                    _c("label", { attrs: { for: "" } }, [_vm._v("Option ")]),
                     _vm._v(" "),
                     _c(
                       "select",
@@ -51219,8 +51232,8 @@ var render = function() {
                           {
                             name: "model",
                             rawName: "v-model",
-                            value: item.option,
-                            expression: "item.option"
+                            value: item.title,
+                            expression: "item.title"
                           }
                         ],
                         staticClass: "form-control",
@@ -51236,7 +51249,7 @@ var render = function() {
                               })
                             _vm.$set(
                               item,
-                              "option",
+                              "title",
                               $event.target.multiple
                                 ? $$selectedVal
                                 : $$selectedVal[0]
@@ -51304,19 +51317,7 @@ var render = function() {
             0
           ),
           _vm._v(" "),
-          _vm.product_variant.length < _vm.variants.length &&
-          _vm.product_variant.length < 3
-            ? _c("div", { staticClass: "card-footer" }, [
-                _c(
-                  "button",
-                  {
-                    staticClass: "btn btn-primary",
-                    on: { click: _vm.newVariant }
-                  },
-                  [_vm._v("Add another option")]
-                )
-              ])
-            : _vm._e(),
+          _vm._m(2),
           _vm._v(" "),
           _c("div", { staticClass: "card-header text-uppercase" }, [
             _vm._v("Preview ")
@@ -51325,20 +51326,48 @@ var render = function() {
           _c("div", { staticClass: "card-body" }, [
             _c("div", { staticClass: "table-responsive" }, [
               _c("table", { staticClass: "table" }, [
-                _vm._m(2),
+                _vm._m(3),
                 _vm._v(" "),
                 _c(
                   "tbody",
                   _vm._l(_vm.product.product_price, function(variant_price) {
                     return _c("tr", [
                       _c("td", [
-                        _vm._v(
-                          _vm._s(variant_price.product_variant_one.variant) +
-                            " / " +
-                            _vm._s(variant_price.product_variant_two.variant) +
-                            " / " +
-                            _vm._s(variant_price.product_variant_three.variant)
-                        )
+                        variant_price.product_variant_one
+                          ? _c("span", [
+                              _vm._v(
+                                "\n                                        " +
+                                  _vm._s(
+                                    variant_price.product_variant_one.variant
+                                  ) +
+                                  " /\n                                    "
+                              )
+                            ])
+                          : _vm._e(),
+                        _vm._v(" "),
+                        variant_price.product_variant_two
+                          ? _c("span", [
+                              _vm._v(
+                                "\n                                        " +
+                                  _vm._s(
+                                    variant_price.product_variant_two.variant
+                                  ) +
+                                  " / \n                                    "
+                              )
+                            ])
+                          : _vm._e(),
+                        _vm._v(" "),
+                        variant_price.product_variant_three
+                          ? _c("span", [
+                              _vm._v(
+                                "\n                                        " +
+                                  _vm._s(
+                                    variant_price.product_variant_three.variant
+                                  ) +
+                                  "\n                                    "
+                              )
+                            ])
+                          : _vm._e()
                       ]),
                       _vm._v(" "),
                       _c("td", [
@@ -51458,6 +51487,16 @@ var staticRenderFns = [
         ])
       ]
     )
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "card-footer" }, [
+      _c("button", { staticClass: "btn btn-primary" }, [
+        _vm._v("Add another option")
+      ])
+    ])
   },
   function() {
     var _vm = this
@@ -64003,8 +64042,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\xampp\htdocs\interview-question-sr\resources\js\app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! C:\xampp\htdocs\interview-question-sr\resources\sass\app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! C:\xampp\htdocs\mediusware-test\resources\js\app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! C:\xampp\htdocs\mediusware-test\resources\sass\app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

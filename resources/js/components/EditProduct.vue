@@ -36,11 +36,11 @@
                     </div>
                     
                     <div class="card-body">
-                        <div class="row" v-for="(item,index) in product.product_variant">
+                        <div class="row" v-for="(item,index) in prodvar">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="">Option</label>
-                                    <select v-model="item.option" class="form-control">
+                                    <label for="">Option </label>
+                                    <select v-model="item.title" class="form-control">
                                         <option v-for="variant in variants"
                                                 :value="variant.id">
                                             {{ variant.title }}
@@ -59,8 +59,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer" v-if="product_variant.length < variants.length && product_variant.length < 3">
-                        <button @click="newVariant" class="btn btn-primary">Add another option</button>
+                    <div class="card-footer">
+                        <button class="btn btn-primary">Add another option</button>
                     </div>
 
                     <div class="card-header text-uppercase">Preview </div>
@@ -76,7 +76,17 @@
                                 </thead>
                                 <tbody>
                                 <tr v-for="variant_price in product.product_price">
-                                    <td>{{ variant_price.product_variant_one.variant }} / {{ variant_price.product_variant_two.variant }} / {{ variant_price.product_variant_three.variant }}</td>
+                                    <td>
+                                        <span v-if="variant_price.product_variant_one">
+                                            {{ variant_price.product_variant_one.variant }} /
+                                        </span> 
+                                        <span v-if="variant_price.product_variant_two">
+                                            {{ variant_price.product_variant_two.variant }} / 
+                                        </span>
+                                        <span v-if="variant_price.product_variant_three">
+                                            {{ variant_price.product_variant_three.variant }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <input type="text" class="form-control" v-model="variant_price.price">
                                     </td>
@@ -115,6 +125,10 @@ export default {
         product: {
             type: Array,
             required: true
+        },
+        prodvar: {
+            type: Array,
+            required: true
         }
     },
     data() {
@@ -125,7 +139,7 @@ export default {
             images: [],
             product_variant: [
                 {
-                    option: this.variants[0].id,
+                    title: this.variants[0].id,
                     tags: []
                 }
             ],
@@ -142,12 +156,12 @@ export default {
         // it will push a new object into product variant
         newVariant() {
             let all_variants = this.variants.map(el => el.id)
-            let selected_variants = this.product_variant.map(el => el.option);
+            let selected_variants = this.product_variant.map(el => el.title);
             let available_variants = all_variants.filter(entry1 => !selected_variants.some(entry2 => entry1 == entry2))
             // console.log(available_variants)
 
             this.product_variant.push({
-                option: available_variants[0],
+                title: available_variants[0],
                 tags: []
             })
         },
@@ -185,16 +199,16 @@ export default {
         // store product into database
         saveProduct() {
             let product = {
-                title: this.product_name,
-                sku: this.product_sku,
+                title: this.title,
+                sku: this.sku,
                 description: this.description,
                 product_image: this.images,
                 product_variant: this.product_variant,
-                product_variant_prices: this.product_variant_prices
+                variant_price: this.variant_price
             }
 
 
-            axios.post('/product', product).then(response => {
+            axios.put('http://127.0.0.1:8000/product/update', product).then(response => {
                 console.log(response)
                 if(response.data == 200) {
                     this.$swal('Hello Vue world!!!');
